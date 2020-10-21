@@ -1,7 +1,13 @@
 require "csv"
 require "rubygems"
-require "active_support/all"
+require "active_support/all" # I'm so lazy!
 
+# Export Hourly reports from Sense
+# 1. Go to https://home.sense.com/trends
+# 2. Select a month
+# 3. Click the icon in the upper right that sort of looks like sharing
+# 4. Select "Hour" for the interval.
+# Set data_root to where you put these files.
 data_root = "/Users/daniel/Documents/99\ W\ 11th/Energy/Sense\ Exports"
 
 def rate_for_time(time)
