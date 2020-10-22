@@ -9,12 +9,21 @@ require "active_support/all" # I'm so lazy!
 # 4. Select "Hour" for the interval.
 # Set data_root to where you put these files.
 data_root = "/Users/daniel/Documents/99\ W\ 11th/Energy/Sense\ Exports"
+billing_day = 22
+
+def off_peak?(time)
+  time.on_weekend? || time.hour >= 22 || time.hour < 8 || bpw_holiday?(time)
+end
+
+def on_peak?(time)
+  !off_peak?(time) && (10...18).cover?(time.hour)
+end
 
 def rate_for_time(time)
-  if time.on_weekend? || time.hour >= 22 || time.hour < 8 || bpw_holiday?(time)
+  if off_peak?(time)
     # off peak
     "0.0350".to_d
-  elsif (10...18).cover?(time.hour)
+  elsif on_peak?(time)
     # on peak
     "0.12".to_d
   else
@@ -55,8 +64,10 @@ Dir.children(data_root).each do |child|
 end
 
 hourlies.group_by{|hourly| hourly["DateTime"].split(" ").first }.sort_by{|d, _| d }.each do |day, readings|
+  kwh_sum = 0
   day_savings = readings.sum do |hourly|
     kwh = hourly["kWh"].to_d
+    kwh_sum += kwh
     hour = Time.parse(hourly["DateTime"])
     base_rate = mid_peak_for_time(hour) # base rate is equal to mid peak
     tou_rate = rate_for_time(hour)
@@ -65,9 +76,37 @@ hourlies.group_by{|hourly| hourly["DateTime"].split(" ").first }.sort_by{|d, _| 
 
   grand_total += day_savings
 
-  puts "#{day}: $" + day_savings.to_s
+  puts "#{day}: #{kwh_sum}kWh, $" + day_savings.to_s
 end
 
-
-
 puts "Total Savings: $#{grand_total}"
+
+puts "-" * 20
+puts "Date, Off, On, Mid"
+# Billing period stuff
+groups = hourlies.group_by do |reading|
+  date = reading["DateTime"].split(" ").first.to_date
+  start_date = date.change(day: billing_day)
+  if date.day >= billing_day
+    start_date..start_date.advance(months: 1)
+  else
+    start_date.advance(months: -1)..start_date
+  end
+end
+
+groups.each do |range, readings|
+  off_peak_kwh = 0.to_d
+  on_peak_kwh  = 0.to_d
+  mid_peak_kwh = 0.to_d
+  readings.each do |reading|
+    time = Time.parse(reading["DateTime"])
+    if off_peak?(time)
+      off_peak_kwh += reading["kWh"].to_d
+    elsif on_peak?(time)
+      on_peak_kwh += reading["kWh"].to_d
+    else
+      mid_peak_kwh += reading["kWh"].to_d
+    end
+  end
+  puts "#{range}, #{off_peak_kwh}, #{on_peak_kwh}, #{mid_peak_kwh}"
+end
