@@ -16,7 +16,7 @@ def off_peak?(time)
 end
 
 def on_peak?(time)
-  !off_peak?(time) && (10...18).cover?(time.hour)
+  (10...18).cover?(time.hour) && !off_peak?(time)
 end
 
 def rate_for_time(time)
