@@ -82,7 +82,7 @@ end
 puts "Total Savings: $#{grand_total}"
 
 puts "-" * 20
-puts "Date, Off, On, Mid"
+puts "Date, Off, On, Mid, Savings"
 # Billing period stuff
 groups = hourlies.group_by do |reading|
   date = reading["DateTime"].split(" ").first.to_date
@@ -98,15 +98,21 @@ groups.each do |range, readings|
   off_peak_kwh = 0.to_d
   on_peak_kwh  = 0.to_d
   mid_peak_kwh = 0.to_d
+  base_cost = 0
+  tou_cost = 0
   readings.each do |reading|
     time = Time.parse(reading["DateTime"])
+    kwh = reading["kWh"].to_d
     if off_peak?(time)
-      off_peak_kwh += reading["kWh"].to_d
+      off_peak_kwh += kwh
     elsif on_peak?(time)
-      on_peak_kwh += reading["kWh"].to_d
+      on_peak_kwh += kwh
     else
-      mid_peak_kwh += reading["kWh"].to_d
+      mid_peak_kwh += kwh
     end
+    base_cost += (kwh * mid_peak_for_time(time))
+    tou_cost += (kwh * rate_for_time(time))
   end
-  puts "#{range}, #{off_peak_kwh}, #{on_peak_kwh}, #{mid_peak_kwh}"
+  savings = base_cost - tou_cost
+  puts "#{range}, #{off_peak_kwh}, #{on_peak_kwh}, #{mid_peak_kwh}, $#{savings}"
 end
