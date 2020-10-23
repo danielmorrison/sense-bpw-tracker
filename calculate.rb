@@ -57,8 +57,8 @@ grand_total = 0.to_d
 
 hourlies = []
 
-Dir.children(data_root).each do |child|
-  CSV.foreach(File.join(data_root, child), "r", headers: true, skip_lines: /^#/) do |row|
+Dir.glob("*.csv", base: data_root).each do |file|
+  CSV.foreach(File.join(data_root, file), "r", headers: true, skip_lines: /^#/) do |row|
     hourlies << row if row["Device ID"] == "mains" && row["Name"] == "Total Usage"
   end
 end
