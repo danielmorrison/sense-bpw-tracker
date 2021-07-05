@@ -94,7 +94,7 @@ groups = hourlies.group_by do |reading|
   end
 end
 
-groups.each do |range, readings|
+groups.sort_by{|range, _| range.first }.each do |range, readings|
   off_peak_kwh = 0.to_d
   on_peak_kwh  = 0.to_d
   mid_peak_kwh = 0.to_d
