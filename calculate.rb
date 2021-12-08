@@ -22,7 +22,7 @@ end
 def rate_for_time(time)
   if off_peak?(time)
     # off peak
-    if time < Date.new(2021, 07, 01).to_time
+    if time < Date.new(2021, 7, 1).to_time
       "0.0350".to_d
     else
       "0.0301".to_d
@@ -39,18 +39,16 @@ end
 def mid_peak_for_time(time)
   if (5...10).cover?(time.month)
     # mid-peak May-Oct
-    if time < Date.new(2021, 07, 01).to_time
+    if time < Date.new(2021, 7, 1).to_time
       "0.0637".to_d
     else
       "0.0548".to_d
     end
-  else
+  elsif time < Date.new(2021, 7, 1).to_time
     # mid-peak Nov-Apr
-    if time < Date.new(2021, 07, 01).to_time
-      "0.0520".to_d
-    else
-      "0.0447".to_d
-    end
+    "0.0520".to_d
+  else
+    "0.0447".to_d
   end
 end
 
@@ -75,7 +73,7 @@ Dir.glob("*.csv", base: data_root).each do |file|
   end
 end
 
-hourlies.group_by{|hourly| hourly["DateTime"].split(" ").first }.sort_by{|d, _| d }.each do |day, readings|
+hourlies.group_by { |hourly| hourly["DateTime"].split(" ").first }.sort_by { |d, _| d }.each do |day, readings|
   kwh_sum = 0
   day_savings = readings.sum do |hourly|
     kwh = hourly["kWh"].to_d
@@ -106,9 +104,9 @@ groups = hourlies.group_by do |reading|
   end
 end
 
-groups.sort_by{|range, _| range.first }.each do |range, readings|
+groups.sort_by { |range, _| range.first }.each do |range, readings|
   off_peak_kwh = 0.to_d
-  on_peak_kwh  = 0.to_d
+  on_peak_kwh = 0.to_d
   mid_peak_kwh = 0.to_d
   base_cost = 0
   tou_cost = 0
