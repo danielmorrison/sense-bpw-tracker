@@ -22,7 +22,11 @@ end
 def rate_for_time(time)
   if off_peak?(time)
     # off peak
-    "0.0350".to_d
+    if time < Date.new(2021, 07, 01).to_time
+      "0.0350".to_d
+    else
+      "0.0301".to_d
+    end
   elsif on_peak?(time)
     # on peak
     "0.12".to_d
@@ -35,10 +39,18 @@ end
 def mid_peak_for_time(time)
   if (5...10).cover?(time.month)
     # mid-peak May-Oct
-    "0.0637".to_d
+    if time < Date.new(2021, 07, 01).to_time
+      "0.0637".to_d
+    else
+      "0.0548".to_d
+    end
   else
     # mid-peak Nov-Apr
-    "0.0520".to_d
+    if time < Date.new(2021, 07, 01).to_time
+      "0.0520".to_d
+    else
+      "0.0447".to_d
+    end
   end
 end
 
